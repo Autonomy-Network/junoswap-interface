@@ -41,6 +41,7 @@ export const usePoolsListQuery = (options?: Parameters<typeof useQuery>[1]) => {
     async () => {
       const response = await fetch(process.env.NEXT_PUBLIC_POOLS_LIST_URL)
       const tokenList = await response.json()
+
       return {
         ...tokenList,
         poolsById: tokenList.pools.reduce(

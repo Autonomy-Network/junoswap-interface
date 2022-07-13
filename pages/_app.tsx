@@ -14,6 +14,7 @@ import type { AppProps } from 'next/app'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import { RecoilRoot } from 'recoil'
 import { queryClient } from 'services/queryClient'
 
@@ -66,6 +67,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <Toaster position="top-right" toastOptions={{ duration: 10000 }} />
           </ErrorBoundary>
         </NextJsAppRoot>
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
       </QueryClientProvider>
     </RecoilRoot>
   )

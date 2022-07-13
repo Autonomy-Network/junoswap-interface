@@ -1,3 +1,4 @@
+// eslint-disable-next-line simple-import-sort/imports
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
 import { GasPrice } from '@cosmjs/stargate'
 import { useEffect } from 'react'
@@ -7,12 +8,14 @@ import { useRecoilState } from 'recoil'
 import { walletState, WalletStatusType } from '../state/atoms/walletAtoms'
 import { GAS_PRICE } from '../util/constants'
 import { useChainInfo } from './useChainInfo'
+// import { ChainInfos } from 'services/chain/chain-infos'
 
 export const useConnectWallet = (
   mutationOptions?: Parameters<typeof useMutation>[2]
 ) => {
   const [{ status }, setWalletState] = useRecoilState(walletState)
   const [chainInfo] = useChainInfo()
+  // const chainInfo = ChainInfos[0]
 
   const mutation = useMutation(async () => {
     if (window && !window?.keplr) {

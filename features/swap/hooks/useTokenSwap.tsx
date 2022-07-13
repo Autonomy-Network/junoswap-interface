@@ -115,6 +115,7 @@ export const useTokenSwap = ({
             amount: 0,
           },
           tokenB,
+          true,
         ])
 
         refetchQueries()

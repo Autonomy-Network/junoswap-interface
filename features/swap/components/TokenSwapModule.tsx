@@ -35,6 +35,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
           amount: tokenA.amount || 0,
         },
         tokenB,
+        true,
       ])
     }
   }, [tokenList, tokenA, tokenB, setTokenSwapState])
@@ -53,6 +54,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
             tokenSymbol: tokenBSymbol,
             amount: 0,
           },
+          true,
         ])
       }
     },
@@ -83,6 +85,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
     setTokenSwapState([
       tokenB ? { ...tokenB, amount: tokenPrice } : tokenB,
       tokenA ? { ...tokenA, amount: tokenB.amount } : tokenA,
+      true,
     ])
   }
 
@@ -94,7 +97,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
           tokenSymbol={tokenA.tokenSymbol}
           amount={tokenA.amount}
           onChange={(updateTokenA) => {
-            setTokenSwapState([updateTokenA, tokenB])
+            setTokenSwapState([updateTokenA, tokenB, true])
           }}
           disabled={isUiDisabled}
           size={uiSize}
@@ -112,7 +115,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
           tokenSymbol={tokenB.tokenSymbol}
           amount={tokenPrice}
           onChange={(updatedTokenB) => {
-            setTokenSwapState([tokenA, updatedTokenB])
+            setTokenSwapState([tokenA, updatedTokenB, true])
           }}
           disabled={isUiDisabled}
           size={uiSize}

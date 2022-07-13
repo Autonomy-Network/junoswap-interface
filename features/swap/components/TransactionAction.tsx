@@ -22,9 +22,8 @@ export const TransactionAction = ({
   size = 'large',
 }: TransactionTipsProps) => {
   const [requestedSwap, setRequestedSwap] = useState(false)
-  const [tokenA, tokenB] = useRecoilValue(tokenSwapAtom)
+  const [tokenA, tokenB, disabled] = useRecoilValue(tokenSwapAtom)
   const { balance: tokenABalance } = useTokenBalance(tokenA?.tokenSymbol)
-
   /* wallet state */
   const { status } = useRecoilValue(walletState)
   const { mutate: connectWallet } = useConnectWallet()
@@ -63,7 +62,8 @@ export const TransactionAction = ({
     !tokenA.tokenSymbol ||
     status !== WalletStatusType.connected ||
     tokenA.amount <= 0 ||
-    tokenA?.amount > tokenABalance
+    tokenA?.amount > tokenABalance ||
+    disabled
 
   if (size === 'small') {
     return (
@@ -108,18 +108,6 @@ export const TransactionAction = ({
 
   return (
     <StyledDivForWrapper>
-      <StyledDivForInfo>
-        <StyledDivColumnForInfo kind="slippage">
-          <SlippageSelector
-            slippage={slippage}
-            onSlippageChange={setSlippage}
-            css={{ borderRadius: '$2 0 0 $2' }}
-          />
-        </StyledDivColumnForInfo>
-        <StyledDivColumnForInfo kind="fees">
-          <Text variant="legend">Swap fee ({NETWORK_FEE * 100}%)</Text>
-        </StyledDivColumnForInfo>
-      </StyledDivForInfo>
       <Button
         variant="primary"
         size="large"
@@ -138,7 +126,7 @@ export const TransactionAction = ({
 
 const StyledDivForWrapper = styled('div', {
   display: 'grid',
-  gridTemplateColumns: '1fr 150px',
+  gridTemplateColumns: '1fr',
   columnGap: 12,
   alignItems: 'center',
   padding: '12px 0',

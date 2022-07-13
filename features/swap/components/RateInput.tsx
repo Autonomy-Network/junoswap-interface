@@ -1,26 +1,44 @@
 import { Button, styled, Text } from 'junoblocks'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useRecoilState, useRecoilValue } from 'recoil'
 
+import { useTxRates } from '../hooks'
+import { tokenSwapAtom } from '../swapAtoms'
 import { SelectorInput } from './SelectorInput'
 
 type RateInputProps = {
   readOnly?: boolean
   disabled?: boolean
-  amount: number
-  onChange: (amount: number) => void
+  tokenToTokenPrice: number
+  isPriceLoading: boolean
   size?: 'small' | 'large'
 }
 
 export const RateInput = ({
   disabled,
-  amount,
-  onChange,
+  tokenToTokenPrice,
+  isPriceLoading,
   size = 'large',
 }: RateInputProps) => {
   const wrapperRef = useRef<HTMLDivElement>()
   const inputRef = useRef<HTMLInputElement>()
+  const [[tokenA, tokenB], setTokenSwapState] = useRecoilState(tokenSwapAtom)
 
   const [isInputForAmountFocused, setInputForAmountFocused] = useState(false)
+  const [rateAmount, setRateAmount] = useState(0)
+
+  const { conversionRate } = useTxRates({
+    tokenASymbol: tokenA?.tokenSymbol,
+    tokenBSymbol: tokenB?.tokenSymbol,
+    tokenAAmount: tokenA?.amount,
+    tokenToTokenPrice,
+    isLoading: isPriceLoading,
+  })
+
+  useEffect(() => {
+    if (rateAmount > conversionRate) setTokenSwapState([tokenA, tokenB, false])
+    else setTokenSwapState([tokenA, tokenB, true])
+  }, [rateAmount, conversionRate, setTokenSwapState, tokenA, tokenB])
 
   if (size === 'small') {
     return <></>
@@ -42,7 +60,7 @@ export const RateInput = ({
     <Button
       variant="primary"
       size="small"
-      onClick={() => {}}
+      onClick={() => setRateAmount(conversionRate)}
       css={{ padding: '0.1rem 0.5rem' }}
     >
       Current
@@ -57,9 +75,9 @@ export const RateInput = ({
         <StyledDivForAmountWrapper>
           <SelectorInput
             inputRef={inputRef}
-            amount={amount}
+            amount={rateAmount}
+            onAmountChange={setRateAmount}
             disabled={disabled}
-            onAmountChange={() => {}}
             onFocus={() => setInputForAmountFocused(true)}
             onBlur={() => setInputForAmountFocused(false)}
           />

@@ -40,6 +40,7 @@ export const LimitOrderModule = ({
           amount: tokenA.amount || 0,
         },
         tokenB,
+        true,
       ])
     }
   }, [tokenList, tokenA, tokenB, setTokenSwapState])
@@ -58,6 +59,7 @@ export const LimitOrderModule = ({
             tokenSymbol: tokenBSymbol,
             amount: 0,
           },
+          true,
         ])
       }
     },
@@ -88,6 +90,7 @@ export const LimitOrderModule = ({
     setTokenSwapState([
       tokenB ? { ...tokenB, amount: tokenPrice } : tokenB,
       tokenA ? { ...tokenA, amount: tokenB.amount } : tokenA,
+      true,
     ])
   }
 
@@ -99,7 +102,7 @@ export const LimitOrderModule = ({
           tokenSymbol={tokenA.tokenSymbol}
           amount={tokenA.amount}
           onChange={(updateTokenA) => {
-            setTokenSwapState([updateTokenA, tokenB])
+            setTokenSwapState([updateTokenA, tokenB, true])
           }}
           disabled={isUiDisabled}
           size={uiSize}
@@ -111,7 +114,10 @@ export const LimitOrderModule = ({
           onTokenSwaps={handleSwapTokenPositions}
           size={uiSize}
         />
-        <RateInput amount={0} onChange={() => {}} />
+        <RateInput
+          tokenToTokenPrice={tokenPrice}
+          isPriceLoading={isPriceLoading}
+        />
         <HorizontalDivider size="small" />
         <TokenSelector
           header="to"
@@ -119,7 +125,7 @@ export const LimitOrderModule = ({
           tokenSymbol={tokenB.tokenSymbol}
           amount={tokenPrice}
           onChange={(updatedTokenB) => {
-            setTokenSwapState([tokenA, updatedTokenB])
+            setTokenSwapState([tokenA, updatedTokenB, true])
           }}
           disabled={isUiDisabled}
           size={uiSize}

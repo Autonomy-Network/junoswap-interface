@@ -5,7 +5,7 @@ export type TokenItemState = {
   amount: number
 }
 
-export const tokenSwapAtom = atom<[TokenItemState, TokenItemState]>({
+export const tokenSwapAtom = atom<[TokenItemState, TokenItemState, boolean]>({
   key: 'tokenSwap',
   default: [
     {
@@ -16,6 +16,7 @@ export const tokenSwapAtom = atom<[TokenItemState, TokenItemState]>({
       tokenSymbol: null,
       amount: 0,
     },
+    true,
   ],
   effects_UNSTABLE: [
     function validateIfTokensAreSame({ onSet, setSelf }) {
@@ -23,7 +24,7 @@ export const tokenSwapAtom = atom<[TokenItemState, TokenItemState]>({
         const [tokenA, tokenB] = newValue
         if (tokenA.tokenSymbol === tokenB.tokenSymbol) {
           requestAnimationFrame(() => {
-            setSelf([oldValue[1], oldValue[0]])
+            setSelf([oldValue[1], oldValue[0], true])
           })
         }
       })

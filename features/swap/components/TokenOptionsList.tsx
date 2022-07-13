@@ -14,7 +14,6 @@ export const TokenOptionsList = ({
     <TokenSelectList
       {...props}
       tokenList={tokenList.tokens}
-      chainInfos={tokenList.chainInfos}
       activeTokenSymbol={activeTokenSymbol}
       onSelect={onSelect}
       fetchingBalanceMode="native"
