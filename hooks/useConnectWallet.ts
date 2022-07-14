@@ -8,14 +8,13 @@ import { useRecoilState } from 'recoil'
 import { walletState, WalletStatusType } from '../state/atoms/walletAtoms'
 import { GAS_PRICE } from '../util/constants'
 import { useChainInfo } from './useChainInfo'
-// import { ChainInfos } from 'services/chain/chain-infos'
+import { registryRequests } from '../services/swap'
 
 export const useConnectWallet = (
   mutationOptions?: Parameters<typeof useMutation>[2]
 ) => {
   const [{ status }, setWalletState] = useRecoilState(walletState)
   const [chainInfo] = useChainInfo()
-  // const chainInfo = ChainInfos[0]
 
   const mutation = useMutation(async () => {
     if (window && !window?.keplr) {
@@ -46,6 +45,10 @@ export const useConnectWallet = (
 
       const [{ address }] = await offlineSigner.getAccounts()
       const key = await window.keplr.getKey(chainInfo.chainId)
+      const transactions = await registryRequests({
+        client: wasmChainClient,
+        senderAddress: address,
+      })
 
       /* successfully update the wallet state */
       setWalletState({
@@ -53,6 +56,7 @@ export const useConnectWallet = (
         address,
         client: wasmChainClient,
         status: WalletStatusType.connected,
+        transactions: transactions,
       })
     } catch (e) {
       /* set the error state */
@@ -61,6 +65,7 @@ export const useConnectWallet = (
         address: '',
         client: null,
         status: WalletStatusType.error,
+        transactions: [],
       })
 
       /* throw the error for the UI */

@@ -46,7 +46,7 @@ export const TokenSelector = ({
   const [isInputForAmountFocused, setInputForAmountFocused] = useState(false)
 
   const shouldShowConvenienceBalanceButtons = Boolean(
-    !isTokenListShowing && tokenSymbol && !readOnly && availableAmount >= 0
+    !isTokenListShowing && tokenSymbol && !readOnly && availableAmount > 0
   )
 
   const handleAmountChange = (amount) => onChange({ tokenSymbol, amount })

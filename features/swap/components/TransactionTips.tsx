@@ -37,7 +37,7 @@ export const TransactionTips = ({
     useTxRates({
       tokenASymbol: tokenA?.tokenSymbol,
       tokenBSymbol: tokenB?.tokenSymbol,
-      tokenAAmount: tokenA?.amount,
+      tokenAAmount: 1,
       tokenToTokenPrice,
       isLoading: isPriceLoading,
     })

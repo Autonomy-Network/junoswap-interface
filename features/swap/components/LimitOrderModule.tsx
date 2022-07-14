@@ -1,6 +1,6 @@
 import { useTokenList } from 'hooks/useTokenList'
 import { styled, useMedia, usePersistance } from 'junoblocks'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import {
   TransactionStatus,
@@ -45,6 +45,8 @@ export const LimitOrderModule = ({
     }
   }, [tokenList, tokenA, tokenB, setTokenSwapState])
 
+  const [currentPrice, setCurrentPrice] = useState(0)
+
   const initialTokenPairValue = useRef(initialTokenPair).current
   useEffect(
     function setInitialTokenPairIfProvided() {
@@ -71,20 +73,29 @@ export const LimitOrderModule = ({
   const uiSize = useMedia('sm') ? 'small' : 'large'
 
   /* fetch token to token price */
-  const [currentTokenPrice, isPriceLoading] = useTokenToTokenPrice({
-    tokenASymbol: tokenA?.tokenSymbol,
-    tokenBSymbol: tokenB?.tokenSymbol,
-    tokenAmount: tokenA?.amount,
-  })
+  const [currentTokenPrice, currentTokenRate, isPriceLoading] =
+    useTokenToTokenPrice({
+      tokenASymbol: tokenA?.tokenSymbol,
+      tokenBSymbol: tokenB?.tokenSymbol,
+      tokenAmount: tokenA?.amount,
+    })
 
   /* persist token price when querying a new one */
   const persistTokenPrice = usePersistance(
     isPriceLoading ? undefined : currentTokenPrice
   )
+  const persistTokenRate = usePersistance(
+    isPriceLoading ? undefined : currentTokenRate
+  )
 
   /* select token price */
   const tokenPrice =
     (isPriceLoading ? persistTokenPrice : currentTokenPrice) || 0
+  const tokenRate = (isPriceLoading ? persistTokenRate : currentTokenRate) || 0
+
+  useEffect(() => {
+    if (currentTokenRate) setCurrentPrice(currentTokenRate)
+  }, [currentTokenRate])
 
   const handleSwapTokenPositions = () => {
     setTokenSwapState([
@@ -110,20 +121,22 @@ export const LimitOrderModule = ({
         <TransactionTips
           disabled={isUiDisabled}
           isPriceLoading={isPriceLoading}
-          tokenToTokenPrice={tokenPrice}
+          tokenToTokenPrice={tokenRate}
           onTokenSwaps={handleSwapTokenPositions}
           size={uiSize}
         />
         <RateInput
-          tokenToTokenPrice={tokenPrice}
+          tokenToTokenPrice={tokenRate}
           isPriceLoading={isPriceLoading}
+          amount={currentPrice}
+          onAmountChange={setCurrentPrice}
         />
         <HorizontalDivider size="small" />
         <TokenSelector
           header="to"
           readOnly
           tokenSymbol={tokenB.tokenSymbol}
-          amount={tokenPrice}
+          amount={currentPrice * tokenA.amount}
           onChange={(updatedTokenB) => {
             setTokenSwapState([tokenA, updatedTokenB, true])
           }}
@@ -133,7 +146,9 @@ export const LimitOrderModule = ({
       </StyledDivForWrapper>
       <TransactionAction
         isPriceLoading={isPriceLoading}
-        tokenToTokenPrice={tokenPrice}
+        tokenToTokenPrice={currentPrice * tokenA.amount}
+        tokenToTokenRate={tokenRate}
+        currentPrice={currentPrice}
         size={uiSize}
       />
       <Transactions />

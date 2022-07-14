@@ -58,6 +58,7 @@ export function NavigationSidebar({
       address: '',
       key: null,
       client: null,
+      transactions: [],
     })
   }
 
@@ -87,28 +88,6 @@ export function NavigationSidebar({
           Swap
         </Button>
       </Link>
-      {/* <Link href="/transfer" passHref>
-        <Button
-          as="a"
-          variant="menu"
-          size="large"
-          iconLeft={<ArrowUpIcon />}
-          selected={getIsLinkActive('/transfer')}
-        >
-          Transfer
-        </Button>
-      </Link>
-      <Link href="/pools" passHref>
-        <Button
-          as="a"
-          variant="menu"
-          size="large"
-          iconLeft={<IconWrapper icon={<Open />} />}
-          selected={getIsLinkActive('/pools')}
-        >
-          Liquidity
-        </Button>
-      </Link> */}
       <Link href="/limit-order" passHref>
         <Button
           as="a"

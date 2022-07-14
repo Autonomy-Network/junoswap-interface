@@ -6,23 +6,27 @@ import { useRecoilState, useRecoilValue } from 'recoil'
 import { walletState, WalletStatusType } from 'state/atoms/walletAtoms'
 import { NETWORK_FEE } from 'util/constants'
 
-import { useTokenSwap } from '../hooks'
+import { useRegistry, useTokenSwap } from '../hooks'
 import { slippageAtom, tokenSwapAtom } from '../swapAtoms'
 import { SlippageSelector } from './SlippageSelector'
 
 type TransactionTipsProps = {
   isPriceLoading?: boolean
   tokenToTokenPrice?: number
+  tokenToTokenRate?: number
+  currentPrice?: number
   size?: 'small' | 'large'
 }
 
 export const TransactionAction = ({
   isPriceLoading,
+  tokenToTokenRate,
   tokenToTokenPrice,
+  currentPrice,
   size = 'large',
 }: TransactionTipsProps) => {
   const [requestedSwap, setRequestedSwap] = useState(false)
-  const [tokenA, tokenB, disabled] = useRecoilValue(tokenSwapAtom)
+  const [tokenA, tokenB] = useRecoilValue(tokenSwapAtom)
   const { balance: tokenABalance } = useTokenBalance(tokenA?.tokenSymbol)
   /* wallet state */
   const { status } = useRecoilValue(walletState)
@@ -37,16 +41,39 @@ export const TransactionAction = ({
       tokenToTokenPrice: tokenToTokenPrice || 0,
     })
 
+  const { mutate: handleRegistry, isLoading: isExecutingRegistryTransaction } =
+    useRegistry({
+      tokenASymbol: tokenA?.tokenSymbol,
+      tokenBSymbol: tokenB?.tokenSymbol,
+      tokenAmount: tokenA?.amount,
+      tokenToTokenPrice: tokenToTokenPrice || 0,
+    })
+
   /* proceed with the swap only if the price is loaded */
 
   useEffect(() => {
     const shouldTriggerTransaction =
-      !isPriceLoading && !isExecutingTransaction && requestedSwap
+      !isPriceLoading &&
+      !isExecutingTransaction &&
+      !isExecutingRegistryTransaction &&
+      requestedSwap
     if (shouldTriggerTransaction) {
-      handleSwap()
-      setRequestedSwap(false)
+      if (window.location.href.includes('/limit-order')) {
+        handleRegistry()
+        setRequestedSwap(false)
+      } else {
+        handleSwap()
+        setRequestedSwap(false)
+      }
     }
-  }, [isPriceLoading, isExecutingTransaction, requestedSwap, handleSwap])
+  }, [
+    isPriceLoading,
+    isExecutingTransaction,
+    requestedSwap,
+    handleSwap,
+    isExecutingRegistryTransaction,
+    handleRegistry,
+  ])
 
   const handleSwapButtonClick = () => {
     if (status === WalletStatusType.connected) {
@@ -63,7 +90,7 @@ export const TransactionAction = ({
     status !== WalletStatusType.connected ||
     tokenA.amount <= 0 ||
     tokenA?.amount > tokenABalance ||
-    disabled
+    currentPrice <= tokenToTokenRate
 
   if (size === 'small') {
     return (

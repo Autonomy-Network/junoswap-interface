@@ -12,6 +12,8 @@ type RateInputProps = {
   tokenToTokenPrice: number
   isPriceLoading: boolean
   size?: 'small' | 'large'
+  amount: number
+  onAmountChange: (amount: number) => void
 }
 
 export const RateInput = ({
@@ -19,26 +21,22 @@ export const RateInput = ({
   tokenToTokenPrice,
   isPriceLoading,
   size = 'large',
+  amount,
+  onAmountChange,
 }: RateInputProps) => {
   const wrapperRef = useRef<HTMLDivElement>()
   const inputRef = useRef<HTMLInputElement>()
   const [[tokenA, tokenB], setTokenSwapState] = useRecoilState(tokenSwapAtom)
 
   const [isInputForAmountFocused, setInputForAmountFocused] = useState(false)
-  const [rateAmount, setRateAmount] = useState(0)
 
   const { conversionRate } = useTxRates({
     tokenASymbol: tokenA?.tokenSymbol,
     tokenBSymbol: tokenB?.tokenSymbol,
-    tokenAAmount: tokenA?.amount,
+    tokenAAmount: 1,
     tokenToTokenPrice,
     isLoading: isPriceLoading,
   })
-
-  useEffect(() => {
-    if (rateAmount > conversionRate) setTokenSwapState([tokenA, tokenB, false])
-    else setTokenSwapState([tokenA, tokenB, true])
-  }, [rateAmount, conversionRate, setTokenSwapState, tokenA, tokenB])
 
   if (size === 'small') {
     return <></>
@@ -60,7 +58,7 @@ export const RateInput = ({
     <Button
       variant="primary"
       size="small"
-      onClick={() => setRateAmount(conversionRate)}
+      onClick={() => onAmountChange(conversionRate)}
       css={{ padding: '0.1rem 0.5rem' }}
     >
       Current
@@ -75,8 +73,8 @@ export const RateInput = ({
         <StyledDivForAmountWrapper>
           <SelectorInput
             inputRef={inputRef}
-            amount={rateAmount}
-            onAmountChange={setRateAmount}
+            amount={amount}
+            onAmountChange={onAmountChange}
             disabled={disabled}
             onFocus={() => setInputForAmountFocused(true)}
             onBlur={() => setInputForAmountFocused(false)}

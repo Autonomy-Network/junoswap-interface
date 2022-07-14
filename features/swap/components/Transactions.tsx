@@ -1,29 +1,149 @@
-import { useConnectWallet } from 'hooks/useConnectWallet'
-import { useTokenBalance } from 'hooks/useTokenBalance'
-import {
-  Button,
-  ImageForTokenLogo,
-  Inline,
-  Spinner,
-  styled,
-  Text,
-} from 'junoblocks'
-import React, { useEffect, useState } from 'react'
+import { useTokenList } from 'hooks/useTokenList'
+import { Button, ImageForTokenLogo, Inline, styled, Text } from 'junoblocks'
+import React, { useMemo, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { walletState, WalletStatusType } from 'state/atoms/walletAtoms'
-import { NETWORK_FEE } from 'util/constants'
+import { walletState } from 'state/atoms/walletAtoms'
+import { convertMicroDenomToDenom } from 'util/conversion'
 
-import { useTokenSwap } from '../hooks'
-import { slippageAtom, tokenSwapAtom } from '../swapAtoms'
-import { VerticalDivider } from './Divider'
-import { SlippageSelector } from './SlippageSelector'
+import { useRegistryCancel } from '../hooks/useRegistry'
 
-const transactions = [0, 1]
+const TransactionItem = ({
+  request,
+  activeTab,
+}: {
+  request: any
+  activeTab: string
+}) => {
+  const {
+    mutate: handleRegistryCancel,
+    isLoading: isExecutingRegistryCancelTransaction,
+  } = useRegistryCancel({
+    id: request.id,
+  })
 
-type TransactionsProps = {}
+  const handleCancel = () => {
+    if (!isExecutingRegistryCancelTransaction) {
+      handleRegistryCancel()
+    }
+  }
 
-export const Transactions = ({}: TransactionsProps) => {
-  const [activeTab, setActiveTab] = useState('open')
+  return (
+    <StyledDivForTransaction>
+      <Inline css={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Inline css={{ display: 'flex' }}>
+          <ImageForTokenLogo
+            logoURI={request.inputToken.logoURI}
+            size="big"
+            alt={request.inputToken.symbol}
+            loading="lazy"
+            css={{ marginRight: '$space$6' }}
+          />
+          <Text
+            variant="caption"
+            css={{ marginRight: '$space$18', fontWeight: 'bolder' }}
+          >
+            {request.inputToken.symbol}
+          </Text>
+          <Text
+            variant="caption"
+            css={{ marginRight: '$space$18', fontWeight: 'bolder' }}
+          >
+            {'->'}
+          </Text>
+          <ImageForTokenLogo
+            logoURI={request.outputToken.logoURI}
+            size="big"
+            alt={request.outputToken.symbol}
+            loading="lazy"
+            css={{ marginRight: '$space$6' }}
+          />
+          <Text variant="caption" css={{ fontWeight: 'bolder' }}>
+            {request.outputToken.symbol}
+          </Text>
+        </Inline>
+        {activeTab === 'created' && (
+          <StyledButtonCancel
+            variant="primary"
+            style={{ backgroundColor: '$colors$error70' }}
+            onClick={handleCancel}
+          >
+            Cancel
+          </StyledButtonCancel>
+        )}
+      </Inline>
+      <Text
+        variant="caption"
+        css={{
+          fontWeight: 'bolder',
+          textAlign: 'left',
+          margin: '$space$4 0',
+        }}
+      >
+        Sell{' '}
+        {convertMicroDenomToDenom(
+          request.inputToken.amount,
+          request.inputToken.decimals
+        )}{' '}
+        {request.inputToken.symbol} for{' '}
+        {convertMicroDenomToDenom(
+          request.outputToken.amount,
+          request.outputToken.decimals
+        )}{' '}
+        {request.outputToken.symbol}
+      </Text>
+      <Text variant="caption" css={{ textAlign: 'left' }}>
+        {new Date(request.createdAt * 1000).toString()}
+      </Text>
+    </StyledDivForTransaction>
+  )
+}
+
+export const Transactions = () => {
+  const [activeTab, setActiveTab] = useState('created')
+  const { transactions } = useRecoilValue(walletState)
+  const [tokenList] = useTokenList()
+
+  const requests = useMemo(() => {
+    if (!tokenList || !transactions) return []
+    return transactions.map((transaction) => {
+      const inputToken = tokenList.tokens.find(
+        (token) =>
+          transaction.inputToken.denom === token.denom ||
+          transaction.inputToken.denom === token.token_address
+      )
+      const {
+        logoURI: inputLogo,
+        symbol: inputSymbol,
+        decimals: inputDecimals,
+      } = inputToken
+      const outputToken = tokenList.tokens.find(
+        (token) =>
+          transaction.outputToken.denom === token.denom ||
+          transaction.outputToken.denom === token.token_address
+      )
+      const {
+        logoURI: outputLogo,
+        symbol: outputSymbol,
+        decimals: outputDecimals,
+      } = outputToken
+
+      return {
+        ...transaction,
+        inputToken: {
+          ...transaction.inputToken,
+          logoURI: inputLogo,
+          symbol: inputSymbol,
+          decimals: inputDecimals,
+        },
+        outputToken: {
+          ...transaction.outputToken,
+          logoURI: outputLogo,
+          symbol: outputSymbol,
+          decimals: outputDecimals,
+        },
+      }
+    })
+  }, [tokenList, transactions])
 
   return (
     <StyledDivForWrapper>
@@ -31,8 +151,8 @@ export const Transactions = ({}: TransactionsProps) => {
         <StyledButtonForTabs
           variant="ghost"
           size="large"
-          onClick={() => setActiveTab('open')}
-          active={activeTab === 'open'}
+          onClick={() => setActiveTab('created')}
+          active={activeTab === 'created'}
         >
           <Text variant="body">open</Text>
         </StyledButtonForTabs>
@@ -47,69 +167,22 @@ export const Transactions = ({}: TransactionsProps) => {
         <StyledButtonForTabs
           variant="ghost"
           size="large"
-          onClick={() => setActiveTab('cancelled')}
-          active={activeTab === 'cancelled'}
+          onClick={() => setActiveTab('canceled')}
+          active={activeTab === 'canceled'}
         >
           <Text variant="body">cancelled</Text>
         </StyledButtonForTabs>
       </StyledDivForTabs>
       <StyledDivForTransactionContainer>
-        {transactions.map((transaction) => (
-          <StyledDivForTransaction key={`transaction_${transaction}`}>
-            <Inline css={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Inline css={{ display: 'flex' }}>
-                <ImageForTokenLogo
-                  logoURI="https://autonomy-osmosis-wrapper.netlify.app/tokens/osmo.svg"
-                  size="big"
-                  alt="Osmo"
-                  loading="lazy"
-                  css={{ marginRight: '$space$6' }}
-                />
-                <Text
-                  variant="caption"
-                  css={{ marginRight: '$space$18', fontWeight: 'bolder' }}
-                >
-                  OSMO
-                </Text>
-                <Text
-                  variant="caption"
-                  css={{ marginRight: '$space$18', fontWeight: 'bolder' }}
-                >
-                  {'->'}
-                </Text>
-                <ImageForTokenLogo
-                  logoURI="https://autonomy-osmosis-wrapper.netlify.app/tokens/atom.svg"
-                  size="big"
-                  alt="Atom"
-                  loading="lazy"
-                  css={{ marginRight: '$space$6' }}
-                />
-                <Text variant="caption" css={{ fontWeight: 'bolder' }}>
-                  ATOM
-                </Text>
-              </Inline>
-              <StyledButtonCancel
-                variant="primary"
-                style={{ backgroundColor: '$colors$error70' }}
-              >
-                Cancel
-              </StyledButtonCancel>
-            </Inline>
-            <Text
-              variant="caption"
-              css={{
-                fontWeight: 'bolder',
-                textAlign: 'left',
-                margin: '$space$4 0',
-              }}
-            >
-              Sell 1 OSMO for 0.35 ATOM
-            </Text>
-            <Text variant="caption" css={{ textAlign: 'left' }}>
-              {new Date().toJSON().slice(0, 10).replace(/-/g, '/')}
-            </Text>
-          </StyledDivForTransaction>
-        ))}
+        {requests
+          .filter((request) => request.status === activeTab)
+          .map((request: any) => (
+            <TransactionItem
+              key={`transaction_${request.id}`}
+              activeTab={activeTab}
+              request={request}
+            />
+          ))}
       </StyledDivForTransactionContainer>
     </StyledDivForWrapper>
   )
