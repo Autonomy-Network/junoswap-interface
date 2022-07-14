@@ -122,6 +122,7 @@ export const LimitOrderModule = ({
           disabled={isUiDisabled}
           isPriceLoading={isPriceLoading}
           tokenToTokenPrice={tokenRate}
+          currentPrice={currentPrice}
           onTokenSwaps={handleSwapTokenPositions}
           size={uiSize}
         />

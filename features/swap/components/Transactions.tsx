@@ -1,7 +1,7 @@
 import { useTokenList } from 'hooks/useTokenList'
 import { Button, ImageForTokenLogo, Inline, styled, Text } from 'junoblocks'
 import React, { useMemo, useState } from 'react'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilValue } from 'recoil'
 import { walletState } from 'state/atoms/walletAtoms'
 import { convertMicroDenomToDenom } from 'util/conversion'
 

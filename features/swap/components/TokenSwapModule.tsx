@@ -66,7 +66,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
   const uiSize = useMedia('sm') ? 'small' : 'large'
 
   /* fetch token to token price */
-  const [currentTokenPrice, isPriceLoading] = useTokenToTokenPrice({
+  const [currentTokenPrice, _, isPriceLoading] = useTokenToTokenPrice({
     tokenASymbol: tokenA?.tokenSymbol,
     tokenBSymbol: tokenB?.tokenSymbol,
     tokenAmount: tokenA?.amount,
@@ -106,6 +106,7 @@ export const TokenSwapModule = ({ initialTokenPair }: TokenSwapModuleProps) => {
           disabled={isUiDisabled}
           isPriceLoading={isPriceLoading}
           tokenToTokenPrice={tokenPrice}
+          currentPrice={0}
           onTokenSwaps={handleSwapTokenPositions}
           size={uiSize}
         />

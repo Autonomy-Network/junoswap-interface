@@ -81,7 +81,6 @@ export const registry = async ({
   swapDirection,
   swapAddress,
   senderAddress,
-  slippage,
   price,
   tokenAmount,
   client,

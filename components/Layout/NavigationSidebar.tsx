@@ -85,7 +85,7 @@ export function NavigationSidebar({
           iconLeft={<AddressIcon />}
           selected={getIsLinkActive('/')}
         >
-          Swap
+          Trade
         </Button>
       </Link>
       <Link href="/limit-order" passHref>

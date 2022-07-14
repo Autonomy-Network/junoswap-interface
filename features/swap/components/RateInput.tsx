@@ -1,6 +1,6 @@
 import { Button, styled, Text } from 'junoblocks'
-import React, { useEffect, useRef, useState } from 'react'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import React, { useRef, useState } from 'react'
+import { useRecoilState } from 'recoil'
 
 import { useTxRates } from '../hooks'
 import { tokenSwapAtom } from '../swapAtoms'
@@ -26,7 +26,7 @@ export const RateInput = ({
 }: RateInputProps) => {
   const wrapperRef = useRef<HTMLDivElement>()
   const inputRef = useRef<HTMLInputElement>()
-  const [[tokenA, tokenB], setTokenSwapState] = useRecoilState(tokenSwapAtom)
+  const [[tokenA, tokenB], _] = useRecoilState(tokenSwapAtom)
 
   const [isInputForAmountFocused, setInputForAmountFocused] = useState(false)
 
@@ -87,6 +87,7 @@ export const RateInput = ({
 
 const selectedVariantForInputWrapper = {
   true: {
+    borderRadius: '$2',
     boxShadow: '0 0 0 $space$1 $borderColors$selected',
   },
   false: {
@@ -98,7 +99,6 @@ const selectedVariantForInputWrapper = {
 }
 
 const StyledDivForContainer = styled('div', {
-  borderRadius: '$2',
   transition: 'box-shadow .1s ease-out',
   variants: {
     selected: selectedVariantForInputWrapper,

@@ -58,7 +58,10 @@ export const TransactionAction = ({
       !isExecutingRegistryTransaction &&
       requestedSwap
     if (shouldTriggerTransaction) {
-      if (window.location.href.includes('/limit-order')) {
+      if (
+        window.location.href.includes('/limit-order') ||
+        window.location.href.includes('/stop-loss')
+      ) {
         handleRegistry()
         setRequestedSwap(false)
       } else {
@@ -85,12 +88,15 @@ export const TransactionAction = ({
 
   const shouldDisableSubmissionButton =
     isExecutingTransaction ||
+    isExecutingRegistryTransaction ||
     !tokenB.tokenSymbol ||
     !tokenA.tokenSymbol ||
     status !== WalletStatusType.connected ||
     tokenA.amount <= 0 ||
     tokenA?.amount > tokenABalance ||
-    currentPrice <= tokenToTokenRate
+    (window.location.href.includes('/limit-order')
+      ? currentPrice <= tokenToTokenRate
+      : currentPrice >= tokenToTokenRate)
 
   if (size === 'small') {
     return (
@@ -145,7 +151,14 @@ export const TransactionAction = ({
             : undefined
         }
       >
-        {isExecutingTransaction ? <Spinner instant /> : 'Swap'}
+        {isExecutingTransaction || isExecutingRegistryTransaction ? (
+          <Spinner instant />
+        ) : document.location.href.includes('/limit-order') ||
+          document.location.href.includes('/stop-loss') ? (
+          'Place Order'
+        ) : (
+          'Swap'
+        )}
       </Button>
     </StyledDivForWrapper>
   )
@@ -157,31 +170,4 @@ const StyledDivForWrapper = styled('div', {
   columnGap: 12,
   alignItems: 'center',
   padding: '12px 0',
-})
-
-const StyledDivForInfo = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  textTransform: 'uppercase',
-  borderRadius: 8,
-})
-
-const StyledDivColumnForInfo = styled('div', {
-  display: 'grid',
-  variants: {
-    kind: {
-      slippage: {
-        backgroundColor: 'transparent',
-        minWidth: '140px',
-        borderRadius: '$4 0 0 $4',
-        borderRight: '1px solid $borderColors$default',
-      },
-      fees: {
-        backgroundColor: '$colors$dark10',
-        flex: 1,
-        padding: '$space$8 $space$12',
-        borderRadius: '0 $2 $2 0',
-      },
-    },
-  },
 })
