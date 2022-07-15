@@ -33,6 +33,7 @@ type UseRegistryArgs = {
   /* token amount in denom */
   tokenAmount: number
   tokenToTokenPrice: number
+  type: 'limit-order' | 'stop-loss'
 }
 
 type UseRegistryCancelArgs = {
@@ -44,6 +45,7 @@ export const useRegistry = ({
   tokenBSymbol,
   tokenAmount: providedTokenAmount,
   tokenToTokenPrice,
+  type,
 }: UseRegistryArgs) => {
   const [{ client, address, key, status }, setWalletState] =
     useRecoilState(walletState)
@@ -96,6 +98,7 @@ export const useRegistry = ({
           tokenA,
           tokenB,
           client,
+          type,
         })
       }
 

@@ -47,6 +47,9 @@ export const TransactionAction = ({
       tokenBSymbol: tokenB?.tokenSymbol,
       tokenAmount: tokenA?.amount,
       tokenToTokenPrice: tokenToTokenPrice || 0,
+      type: window.location.href.includes('/limit-order')
+        ? 'limit-order'
+        : 'stop-loss',
     })
 
   /* proceed with the swap only if the price is loaded */

@@ -13,6 +13,7 @@ type RegistryArgs = {
   tokenA: TokenInfo
   tokenB: TokenInfo
   client: SigningCosmWasmClient
+  type: 'limit-order' | 'stop-loss'
 }
 
 type RegistryRequestsArgs = {
@@ -56,22 +57,25 @@ const testnet = {
   },
 
   contracts: {
-    auto: 'juno187axv4l5putlwq9amsaxdzffagkt3u8dfkkl7xcw0hu942snpwqqquanzq', // codeId: 781
+    // Autonomy common contracts
+    auto: 'juno1gn026jj57n0snq7vyl29nypuvzuavs4xsfsja6q6f9glxcqdlmkqf2l96y', // codeId: 1327
     registryStake:
-      'juno1s0taqr3y0la6mt7c7dss7aed75q7s93vdhdk372j4se6vd8jewws4hm7ws', // codeId: 782
+      'juno1f5lgj5dhl72ngchtzpxf6cl2drga6ndj50fgvryk50d98czghvkscq27lc', // codeId: 1328
 
+    // Test "Autonomy-station"
     fundsRouter:
-      'juno1fv2msgmgt5tcz3yqyzm6nemzzlmjw3quweepen734gulzua29g5sth8akj', // codeId: 783
+      'juno1qthxmvn8qr32wwa26n4xafed48uwxf4al7q43mh76pzr0tu6tr8s6yq8tj', // codeId: 1333
     timeConditions:
-      'juno1uce0lzkyzv2n0qu42sqwhgajm4j0ta8tnwqvx6ha207tpnpqvlas0grwjj', // codeId: 784
+      'juno1rnh4qlrg3hlqs9wd0jfy24gwepaqks9e2cpmfcqnu8fhk74q3uzsysax2k', // codeId: 1334
     testCounter:
-      'juno1l4k5endm8e6chd7nypy60whezeff35ds9twmp0druzxtj7q9jd3qvgl2rg', // codeId: 785
+      'juno19sp4qf36mat8ht8aluh0gj2nqcn59kln7u6g7fg0gh2t3w6aw67s8hqxpx', // codeId: 1335
 
-    tcw: 'juno132twgl4fud7kv6xq5ztma4f8zdfh5mqsf7rjp2zs03j5kmhpk74qhgqddh', // "TCW": Test cw20 token   codeId: 787
+    // Test "Wrapper-Junoswap"
+    tcw: 'juno1uwgw49jtlfn6havmmju3h6cncdvfmnnet5v3wahclpaj6wzqe9tqt225dw', // "TCW": Test cw20 token   codeId: 1330
     tcwUjunoSwap:
-      'juno1y6ymzsmntrurapq72uefnxy88vaj6yztrjpgdz768xhz7reazq5sl9ch7m', // codeId: 788
+      'juno1zgkua2rfxsqmgtu4k8jhxkh9mgr5ldh9khfcuzmp6tkfvnmg6xkqemecxe', // codeId: 1331
     wrapperJunoSwap:
-      'juno1as3udnqavujqerd8cmec62kyfwzvaet85g8tsjtjdy4qqkjyetmq7rk7xv', // codeId: 789
+      'juno1rtrsaryw4c2nru55f93mk5x3980pyx2q43874888azkw7vaw7xtslz0z76', // codeId: 1332
   },
 } as const
 
@@ -84,6 +88,7 @@ export const registry = async ({
   price,
   tokenAmount,
   client,
+  type,
 }: RegistryArgs) => {
   const minToken = Math.floor(price)
 
@@ -127,7 +132,8 @@ export const registry = async ({
       input_token,
       output_token,
       input_amount: `${tokenAmount}`,
-      min_output: `${minToken}`,
+      min_output: type === 'limit-order' ? `${minToken}` : '0',
+      max_output: type === 'limit-order' ? `${Infinity}` : `${minToken}`,
       recipient_exist: false,
     },
   })
@@ -214,12 +220,11 @@ export const registryRequests = async ({
           denom: swap.output_token.native_token
             ? swap.output_token.native_token.denom
             : swap.output_token.token.contract_addr,
-          amount: swap.min_output,
+          amount: swap.min_output === '0' ? swap.max_output : swap.min_output,
         },
       }
     })
     .filter((query) => query.address === senderAddress)
-
   return response
 }
 
