@@ -172,14 +172,6 @@ export const registry = async ({
     fee
   )
 
-  // const configs: any = await client.queryContractSmart(
-  //   testnet.contracts.registryStake,
-  //   {
-  //     config: {},
-  //   }
-  // )
-  // console.log(configs)
-
   const requestsQuery: any = await client.queryContractSmart(
     testnet.contracts.registryStake,
     {
@@ -209,7 +201,7 @@ export const registryRequests = async ({
       return {
         address: request.user,
         id: id,
-        type: swap.min_output === '0' ? 'stoploss' : 'limitorder',
+        type: swap.min_output === '0' ? 'stop-loss' : 'limit-order',
         status: request.status,
         createdAt: request.created_at,
         inputToken: {

@@ -105,44 +105,48 @@ export const Transactions = () => {
 
   const requests = useMemo(() => {
     if (!tokenList || !transactions) return []
-    return transactions.map((transaction) => {
-      const inputToken = tokenList.tokens.find(
-        (token) =>
-          transaction.inputToken.denom === token.denom ||
-          transaction.inputToken.denom === token.token_address
+    return transactions
+      .filter((transaction: any) =>
+        window.location.href.includes(transaction.type)
       )
-      const {
-        logoURI: inputLogo,
-        symbol: inputSymbol,
-        decimals: inputDecimals,
-      } = inputToken
-      const outputToken = tokenList.tokens.find(
-        (token) =>
-          transaction.outputToken.denom === token.denom ||
-          transaction.outputToken.denom === token.token_address
-      )
-      const {
-        logoURI: outputLogo,
-        symbol: outputSymbol,
-        decimals: outputDecimals,
-      } = outputToken
-
-      return {
-        ...transaction,
-        inputToken: {
-          ...transaction.inputToken,
+      .map((transaction) => {
+        const inputToken = tokenList.tokens.find(
+          (token) =>
+            transaction.inputToken.denom === token.denom ||
+            transaction.inputToken.denom === token.token_address
+        )
+        const {
           logoURI: inputLogo,
           symbol: inputSymbol,
           decimals: inputDecimals,
-        },
-        outputToken: {
-          ...transaction.outputToken,
+        } = inputToken
+        const outputToken = tokenList.tokens.find(
+          (token) =>
+            transaction.outputToken.denom === token.denom ||
+            transaction.outputToken.denom === token.token_address
+        )
+        const {
           logoURI: outputLogo,
           symbol: outputSymbol,
           decimals: outputDecimals,
-        },
-      }
-    })
+        } = outputToken
+
+        return {
+          ...transaction,
+          inputToken: {
+            ...transaction.inputToken,
+            logoURI: inputLogo,
+            symbol: inputSymbol,
+            decimals: inputDecimals,
+          },
+          outputToken: {
+            ...transaction.outputToken,
+            logoURI: outputLogo,
+            symbol: outputSymbol,
+            decimals: outputDecimals,
+          },
+        }
+      })
   }, [tokenList, transactions])
 
   return (

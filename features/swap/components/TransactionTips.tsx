@@ -93,7 +93,6 @@ export const TransactionTips = ({
             tokenToTokenPrice
           ).toFixed(2)
       : null
-  console.log(marketValue)
 
   if (size === 'small') {
     return (
