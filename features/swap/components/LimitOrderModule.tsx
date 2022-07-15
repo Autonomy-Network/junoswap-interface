@@ -1,5 +1,13 @@
+import { useTokenBalance } from 'hooks/useTokenBalance'
 import { useTokenList } from 'hooks/useTokenList'
-import { styled, useMedia, usePersistance } from 'junoblocks'
+import {
+  Button,
+  ErrorIcon,
+  IconWrapper,
+  styled,
+  useMedia,
+  usePersistance,
+} from 'junoblocks'
 import { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import {
@@ -105,6 +113,8 @@ export const LimitOrderModule = ({
     ])
   }
 
+  const { balance: availableAmount } = useTokenBalance(tokenA.tokenSymbol)
+
   return (
     <>
       <StyledDivForWrapper>
@@ -145,6 +155,18 @@ export const LimitOrderModule = ({
           size={uiSize}
         />
       </StyledDivForWrapper>
+      {tokenA.amount > availableAmount && (
+        <StyledDivForError>
+          <StyledButtonForError variant="primary" size="large">
+            <IconWrapper
+              size="medium"
+              icon={<ErrorIcon />}
+              css={{ marginRight: '6px' }}
+            />
+            Insufficient Balance
+          </StyledButtonForError>
+        </StyledDivForError>
+      )}
       <TransactionAction
         isPriceLoading={isPriceLoading}
         tokenToTokenPrice={currentPrice * tokenA.amount}
@@ -160,4 +182,20 @@ export const LimitOrderModule = ({
 const StyledDivForWrapper = styled('div', {
   borderRadius: '8px',
   backgroundColor: '$colors$dark10',
+})
+
+const StyledDivForError = styled('div', {
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  alignItems: 'center',
+  marginTop: '12px',
+  borderRadius: '6px',
+  backgroundColor: '$colors$error',
+})
+
+const StyledButtonForError = styled(Button, {
+  fontWeight: 'bolder',
+  cursor: 'not-allowed',
+  pointerEvents: 'none',
+  background: 'transparent',
 })

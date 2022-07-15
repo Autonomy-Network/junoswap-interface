@@ -150,6 +150,7 @@ export const TransactionAction = ({
             ? handleSwapButtonClick
             : undefined
         }
+        css={{ fontWeight: 'bolder' }}
       >
         {isExecutingTransaction || isExecutingRegistryTransaction ? (
           <Spinner instant />
