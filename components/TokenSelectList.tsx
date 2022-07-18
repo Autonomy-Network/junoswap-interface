@@ -14,7 +14,6 @@ import {
 import { ComponentPropsWithoutRef, useMemo } from 'react'
 
 import { TokenInfo } from '../queries/usePoolsListQuery'
-import { ChainInfoWithExplorer } from '../services/chain/types'
 import { getPropsForInteractiveElement } from '../util/getPropsForInteractiveElement'
 
 const StyledDivForScrollContainer = styled('div', {
