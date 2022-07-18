@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useMutation } from 'react-query'
 import { useRecoilState } from 'recoil'
 
+import { registryRequests } from '../services/swap'
 import { ibcWalletState, WalletStatusType } from '../state/atoms/walletAtoms'
 import { GAS_PRICE } from '../util/constants'
 import { useIBCAssetInfo } from './useIBCAssetInfo'
@@ -58,6 +59,10 @@ export const useConnectIBCWallet = (
       )
 
       const [{ address }] = await offlineSigner.getAccounts()
+      const transactions = await registryRequests({
+        client: wasmChainClient,
+        senderAddress: address,
+      })
 
       /* successfully update the wallet state */
       setWalletState({
@@ -65,6 +70,7 @@ export const useConnectIBCWallet = (
         address,
         client: wasmChainClient,
         status: WalletStatusType.connected,
+        transactions,
       })
     } catch (e) {
       /* set the error state */
@@ -73,6 +79,7 @@ export const useConnectIBCWallet = (
         address: '',
         client: null,
         status: WalletStatusType.error,
+        transactions: [],
       })
 
       throw e
