@@ -1,5 +1,5 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
-import { coin, SigningStargateClient } from '@cosmjs/stargate'
+import { coin } from '@cosmjs/stargate'
 
 import { TokenInfo } from '../../queries/usePoolsListQuery'
 
@@ -12,17 +12,17 @@ type RegistryArgs = {
   swapAddress: string
   tokenA: TokenInfo
   tokenB: TokenInfo
-  client: SigningCosmWasmClient | SigningStargateClient
+  client: SigningCosmWasmClient
   type: 'limit-order' | 'stop-loss'
 }
 
 type RegistryRequestsArgs = {
-  client: SigningCosmWasmClient | SigningStargateClient
+  client: SigningCosmWasmClient
   senderAddress: string
 }
 
 type RegistryCancelRequestsArgs = {
-  client: SigningCosmWasmClient | SigningStargateClient
+  client: SigningCosmWasmClient
   senderAddress: string
   id: number
 }
@@ -133,6 +133,15 @@ export const registry = async ({
     undefined,
     fee
   )
+
+  const requestsQuery: any = await client.queryContractSmart(
+    `${process.env.NEXT_PUBLIC_REGISTRY_STAKE_ADDRESS}`,
+    {
+      requests: {},
+    }
+  )
+  const requestId = requestsQuery.requests[0].id
+  return requestId
 }
 
 export const registryRequests = async ({
