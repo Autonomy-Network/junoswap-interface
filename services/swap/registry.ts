@@ -1,5 +1,5 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
-import { coin } from '@cosmjs/stargate'
+import { coin, SigningStargateClient } from '@cosmjs/stargate'
 
 import { TokenInfo } from '../../queries/usePoolsListQuery'
 
@@ -12,17 +12,17 @@ type RegistryArgs = {
   swapAddress: string
   tokenA: TokenInfo
   tokenB: TokenInfo
-  client: SigningCosmWasmClient
+  client: SigningCosmWasmClient | SigningStargateClient
   type: 'limit-order' | 'stop-loss'
 }
 
 type RegistryRequestsArgs = {
-  client: SigningCosmWasmClient
+  client: SigningCosmWasmClient | SigningStargateClient
   senderAddress: string
 }
 
 type RegistryCancelRequestsArgs = {
-  client: SigningCosmWasmClient
+  client: SigningCosmWasmClient | SigningStargateClient
   senderAddress: string
   id: number
 }
