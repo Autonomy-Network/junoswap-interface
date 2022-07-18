@@ -67,7 +67,7 @@ const TransactionItem = ({
             style={{ backgroundColor: '$colors$error70' }}
             onClick={handleCancel}
           >
-            Cancel
+            {request.id}Cancel
           </StyledButtonCancel>
         )}
       </Inline>

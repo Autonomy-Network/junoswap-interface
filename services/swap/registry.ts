@@ -89,7 +89,10 @@ export const registry = async ({
       output_token,
       input_amount: `${tokenAmount}`,
       min_output: type === 'limit-order' ? `${minToken}` : '0',
-      max_output: type === 'limit-order' ? `${Infinity}` : `${minToken}`,
+      max_output:
+        type === 'limit-order'
+          ? '340282366920938463463374607431768211455'
+          : `${minToken}`,
       recipient_exist: false,
     },
   })
