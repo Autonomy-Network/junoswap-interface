@@ -149,7 +149,9 @@ export const TransactionAction = ({
         size="large"
         disabled={shouldDisableSubmissionButton}
         onClick={
-          !isExecutingTransaction && !isPriceLoading
+          !isExecutingTransaction &&
+          !isExecutingRegistryTransaction &&
+          !isPriceLoading
             ? handleSwapButtonClick
             : undefined
         }
