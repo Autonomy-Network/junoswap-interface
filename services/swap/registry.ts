@@ -98,10 +98,10 @@ export const registry = async ({
   })
 
   const fee = tokenA.native
-    ? tokenA.denom === 'ujunox'
-      ? [coin(parseInt(`${tokenAmount}`) + parseInt('1000'), 'ujunox')]
-      : [coin(1000, 'ujunox'), coin(parseInt(`${tokenAmount}`), tokenA.denom)]
-    : [coin(1000, 'ujunox')]
+    ? tokenA.denom === 'ujuno'
+      ? [coin(parseInt(`${tokenAmount}`) + parseInt('1000'), 'ujuno')]
+      : [coin(1000, 'ujuno'), coin(parseInt(`${tokenAmount}`), tokenA.denom)]
+    : [coin(1000, 'ujuno')]
 
   if (!tokenA.native) {
     await client.execute(
