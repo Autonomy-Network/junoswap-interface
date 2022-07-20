@@ -1,8 +1,8 @@
 import { AppLayout, PageHeader } from 'components'
+import { LimitOrderModule } from 'features/swap'
 import { styled } from 'junoblocks'
 import React from 'react'
 
-import { LimitOrderModule } from '../../features/swap/components/LimitOrderModule'
 import { APP_NAME } from '../../util/constants'
 
 function getInitialTokenPairFromSearchParams() {
