@@ -1,7 +1,8 @@
 import { useTokenList } from 'hooks/useTokenList'
 import { Button, ImageForTokenLogo, Inline, styled, Text } from 'junoblocks'
-import React, { useMemo, useState } from 'react'
-import { useRecoilValue } from 'recoil'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useRecoilState } from 'recoil'
+import { registryRequests } from 'services/swap/registry'
 import { walletState } from 'state/atoms/walletAtoms'
 import { convertMicroDenomToDenom } from 'util/conversion'
 
@@ -100,7 +101,8 @@ const TransactionItem = ({
 
 export const Transactions = () => {
   const [activeTab, setActiveTab] = useState('created')
-  const { transactions } = useRecoilValue(walletState)
+  const [{ client, address, transactions }, setWalletState] =
+    useRecoilState(walletState)
   const [tokenList] = useTokenList()
 
   const requests = useMemo(() => {
@@ -148,6 +150,20 @@ export const Transactions = () => {
         }
       })
   }, [tokenList, transactions])
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const refetchedTransactions = await registryRequests({
+        client,
+        senderAddress: address,
+      })
+      setWalletState((value) => ({
+        ...value,
+        transactions: refetchedTransactions,
+      }))
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <StyledDivForWrapper>
