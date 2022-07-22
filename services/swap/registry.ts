@@ -91,17 +91,34 @@ export const registry = async ({
       min_output: type === 'limit-order' ? `${minToken}` : '0',
       max_output:
         type === 'limit-order'
-          ? '340282366920938463463374607431768211455'
+          ? process.env.NEXT_PUBLIC_INFINITE
           : `${minToken}`,
       recipient_exist: false,
     },
   })
 
   const fee = tokenA.native
-    ? tokenA.denom === 'ujuno'
-      ? [coin(parseInt(`${tokenAmount}`) + parseInt('1000'), 'ujuno')]
-      : [coin(1000, 'ujuno'), coin(parseInt(`${tokenAmount}`), tokenA.denom)]
-    : [coin(1000, 'ujuno')]
+    ? tokenA.denom === process.env.NEXT_PUBLIC_FEE_DENOM
+      ? [
+          coin(
+            parseInt(`${tokenAmount}`) +
+              parseInt(process.env.NEXT_PUBLIC_FEE_PRICE),
+            process.env.NEXT_PUBLIC_FEE_DENOM
+          ),
+        ]
+      : [
+          coin(
+            parseInt(process.env.NEXT_PUBLIC_FEE_PRICE),
+            process.env.NEXT_PUBLIC_FEE_DENOM
+          ),
+          coin(parseInt(`${tokenAmount}`), tokenA.denom),
+        ]
+    : [
+        coin(
+          parseInt(process.env.NEXT_PUBLIC_FEE_PRICE),
+          process.env.NEXT_PUBLIC_FEE_DENOM
+        ),
+      ]
 
   if (!tokenA.native) {
     await client.execute(
