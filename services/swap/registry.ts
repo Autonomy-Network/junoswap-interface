@@ -97,7 +97,7 @@ export const registry = async ({
     },
   })
 
-  const fee = tokenA.native
+  const funds = tokenA.native
     ? tokenA.denom === process.env.NEXT_PUBLIC_FEE_DENOM
       ? [
           coin(
@@ -107,11 +107,11 @@ export const registry = async ({
           ),
         ]
       : [
+          coin(parseInt(`${tokenAmount}`), tokenA.denom),
           coin(
             parseInt(process.env.NEXT_PUBLIC_FEE_PRICE),
             process.env.NEXT_PUBLIC_FEE_DENOM
           ),
-          coin(parseInt(`${tokenAmount}`), tokenA.denom),
         ]
     : [
         coin(
@@ -151,7 +151,7 @@ export const registry = async ({
     },
     'auto',
     undefined,
-    fee
+    funds
   )
 
   const requestsQuery: any = await client.queryContractSmart(
