@@ -1,5 +1,12 @@
 import { useTokenList } from 'hooks/useTokenList'
-import { Button, ImageForTokenLogo, Inline, styled, Text } from 'junoblocks'
+import {
+  Button,
+  ImageForTokenLogo,
+  Inline,
+  Spinner,
+  styled,
+  Text,
+} from 'junoblocks'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { registryRequests } from 'services/swap/registry'
@@ -67,8 +74,13 @@ const TransactionItem = ({
             variant="primary"
             style={{ backgroundColor: '$colors$error70' }}
             onClick={handleCancel}
+            disabled={isExecutingRegistryCancelTransaction}
           >
-            Cancel
+            {isExecutingRegistryCancelTransaction ? (
+              <Spinner instant />
+            ) : (
+              'Cancel'
+            )}
           </StyledButtonCancel>
         )}
       </Inline>
@@ -273,7 +285,20 @@ const StyledDivForTransaction = styled('div', {
 
 const StyledButtonCancel = styled(Button, {
   background: '$colors$error90',
+  width: '4rem',
+  height: '2rem',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
   '&:hover': {
     backgroundColor: '$colors$error70',
+  },
+  variants: {
+    disabled: {
+      true: {
+        pointerEvents: 'none',
+        cursor: 'not-allowed',
+      },
+    },
   },
 })
