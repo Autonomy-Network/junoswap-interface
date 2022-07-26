@@ -188,14 +188,13 @@ export const useRegistryCancel = ({ id }: UseRegistryCancelArgs) => {
   const refetchQueries = useRefetchQueries(['tokenBalance'])
 
   return useMutation(
-    'registry',
+    'registry-cancel',
     async () => {
       if (status !== WalletStatusType.connected) {
         throw new Error('Please connect your wallet.')
       }
 
       setTransactionState(TransactionStatus.EXECUTING)
-
       return await registryCancelRequests({
         client,
         senderAddress: address,
