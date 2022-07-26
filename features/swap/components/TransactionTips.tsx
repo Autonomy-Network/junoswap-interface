@@ -18,6 +18,7 @@ import { tokenSwapAtom } from '../swapAtoms'
 type TransactionTipsProps = {
   isPriceLoading: boolean
   tokenToTokenPrice: number
+  currentPrice: number
   onTokenSwaps: () => void
   disabled?: boolean
   size?: 'large' | 'small'
@@ -26,6 +27,7 @@ type TransactionTipsProps = {
 export const TransactionTips = ({
   isPriceLoading,
   tokenToTokenPrice,
+  currentPrice,
   onTokenSwaps,
   disabled,
   size = 'large',
@@ -37,7 +39,7 @@ export const TransactionTips = ({
     useTxRates({
       tokenASymbol: tokenA?.tokenSymbol,
       tokenBSymbol: tokenB?.tokenSymbol,
-      tokenAAmount: tokenA?.amount,
+      tokenAAmount: 1,
       tokenToTokenPrice,
       isLoading: isPriceLoading,
     })
@@ -73,6 +75,25 @@ export const TransactionTips = ({
     includeCommaSeparation: true,
   })
 
+  const marketValue =
+    tokenToTokenPrice === 0 || currentPrice === 0
+      ? null
+      : window.location.href.includes('/limit-order')
+      ? tokenToTokenPrice === currentPrice
+        ? '0.00'
+        : (
+            ((currentPrice - tokenToTokenPrice) * 100) /
+            tokenToTokenPrice
+          ).toFixed(2)
+      : window.location.href.includes('/stop-loss')
+      ? tokenToTokenPrice === currentPrice
+        ? '0.00'
+        : (
+            ((tokenToTokenPrice - currentPrice) * 100) /
+            tokenToTokenPrice
+          ).toFixed(2)
+      : null
+
   if (size === 'small') {
     return (
       <Inline
@@ -100,30 +121,59 @@ export const TransactionTips = ({
 
   return (
     <StyledDivForWrapper>
-      <StyledDivForRateWrapper>
-        {switchTokensButton}
+      <StyledDivForPriceWrapper>
+        <StyledDivForRateWrapper>
+          {switchTokensButton}
 
-        {isShowing && (
-          <Text variant="legend" wrap={false}>
-            {transactionRates}
-          </Text>
-        )}
-      </StyledDivForRateWrapper>
+          {isShowing && (
+            <Text variant="legend" wrap={false}>
+              {transactionRates}
+            </Text>
+          )}
+        </StyledDivForRateWrapper>
 
-      <Text variant="legend">${formattedDollarValue}</Text>
+        <Text variant="legend">${formattedDollarValue}</Text>
+      </StyledDivForPriceWrapper>
+      {marketValue && (
+        <StyledDivForMarketWrapper above={marketValue !== '0.00'}>
+          {`${marketValue}% ${
+            window.location.href.includes('/limit-order')
+              ? 'above market value'
+              : 'below market value'
+          }`}
+        </StyledDivForMarketWrapper>
+      )}
     </StyledDivForWrapper>
   )
 }
 
 const StyledDivForWrapper = styled('div', {
   padding: '$8 $16 $8 $12',
+  borderTop: '1px solid $borderColors$inactive',
+  borderBottom: '1px solid $borderColors$inactive',
+})
+
+const StyledDivForPriceWrapper = styled('div', {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   justifyContent: 'space-between',
   alignItems: 'center',
   textAlign: 'right',
-  borderTop: '1px solid $borderColors$inactive',
-  borderBottom: '1px solid $borderColors$inactive',
+})
+
+const StyledDivForMarketWrapper = styled('div', {
+  variants: {
+    above: {
+      true: {
+        color: '$colors$valid',
+        fontWeight: 'bold',
+      },
+      false: {
+        color: '$colors$error',
+        fontWeight: 'bold',
+      },
+    },
+  },
 })
 
 const StyledDivForRateWrapper = styled('div', {

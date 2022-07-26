@@ -1,3 +1,4 @@
+// eslint-disable-next-line simple-import-sort/imports
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
 import { GasPrice } from '@cosmjs/stargate'
 import { useEffect } from 'react'
@@ -7,6 +8,7 @@ import { useRecoilState } from 'recoil'
 import { walletState, WalletStatusType } from '../state/atoms/walletAtoms'
 import { GAS_PRICE } from '../util/constants'
 import { useChainInfo } from './useChainInfo'
+import { registryRequests } from '../services/swap'
 
 export const useConnectWallet = (
   mutationOptions?: Parameters<typeof useMutation>[2]
@@ -43,6 +45,10 @@ export const useConnectWallet = (
 
       const [{ address }] = await offlineSigner.getAccounts()
       const key = await window.keplr.getKey(chainInfo.chainId)
+      const transactions = await registryRequests({
+        client: wasmChainClient,
+        senderAddress: address,
+      })
 
       /* successfully update the wallet state */
       setWalletState({
@@ -50,6 +56,7 @@ export const useConnectWallet = (
         address,
         client: wasmChainClient,
         status: WalletStatusType.connected,
+        transactions: transactions,
       })
     } catch (e) {
       /* set the error state */
@@ -58,6 +65,7 @@ export const useConnectWallet = (
         address: '',
         client: null,
         status: WalletStatusType.error,
+        transactions: [],
       })
 
       /* throw the error for the UI */

@@ -9,8 +9,13 @@ import {
 } from 'junoblocks'
 import { toast } from 'react-hot-toast'
 import { useMutation } from 'react-query'
-import { useRecoilValue, useSetRecoilState } from 'recoil'
-import { directTokenSwap, passThroughTokenSwap } from 'services/swap'
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import {
+  passThroughTokenSwap,
+  registry,
+  registryCancelRequests,
+  registryRequests,
+} from 'services/swap'
 import {
   TransactionStatus,
   transactionStatusState,
@@ -22,21 +27,28 @@ import { useRefetchQueries } from '../../../hooks/useRefetchQueries'
 import { useQueryMatchingPoolForSwap } from '../../../queries/useQueryMatchingPoolForSwap'
 import { slippageAtom, tokenSwapAtom } from '../swapAtoms'
 
-type UseTokenSwapArgs = {
+type UseRegistryArgs = {
   tokenASymbol: string
   tokenBSymbol: string
   /* token amount in denom */
   tokenAmount: number
   tokenToTokenPrice: number
+  type: 'limit-order' | 'stop-loss'
 }
 
-export const useTokenSwap = ({
+type UseRegistryCancelArgs = {
+  id: number
+}
+
+export const useRegistry = ({
   tokenASymbol,
   tokenBSymbol,
   tokenAmount: providedTokenAmount,
   tokenToTokenPrice,
-}: UseTokenSwapArgs) => {
-  const { client, address, status } = useRecoilValue(walletState)
+  type,
+}: UseRegistryArgs) => {
+  const [{ client, address, key, status }, setWalletState] =
+    useRecoilState(walletState)
   const setTransactionState = useSetRecoilState(transactionStatusState)
   const slippage = useRecoilValue(slippageAtom)
   const setTokenSwap = useSetRecoilState(tokenSwapAtom)
@@ -47,7 +59,7 @@ export const useTokenSwap = ({
   const refetchQueries = useRefetchQueries(['tokenBalance'])
 
   return useMutation(
-    'swapTokens',
+    'registry',
     async () => {
       if (status !== WalletStatusType.connected) {
         throw new Error('Please connect your wallet.')
@@ -76,7 +88,7 @@ export const useTokenSwap = ({
         const swapAddress =
           streamlinePoolAB?.swap_address ?? streamlinePoolBA?.swap_address
 
-        return await directTokenSwap({
+        return await registry({
           tokenAmount,
           price,
           slippage,
@@ -84,7 +96,9 @@ export const useTokenSwap = ({
           swapAddress,
           swapDirection,
           tokenA,
+          tokenB,
           client,
+          type,
         })
       }
 
@@ -100,7 +114,7 @@ export const useTokenSwap = ({
       })
     },
     {
-      onSuccess() {
+      async onSuccess() {
         toast.custom((t) => (
           <Toast
             icon={<IconWrapper icon={<Valid />} color="valid" />}
@@ -108,6 +122,18 @@ export const useTokenSwap = ({
             onClose={() => toast.dismiss(t.id)}
           />
         ))
+
+        const refetchedTransactions = await registryRequests({
+          client,
+          senderAddress: address,
+        })
+        setWalletState({
+          key,
+          status,
+          client,
+          address,
+          transactions: refetchedTransactions,
+        })
 
         setTokenSwap(([tokenA, tokenB]) => [
           {
@@ -117,6 +143,86 @@ export const useTokenSwap = ({
           tokenB,
           true,
         ])
+
+        refetchQueries()
+      },
+      onError(e) {
+        const errorMessage =
+          String(e).length > 300
+            ? `${String(e).substring(0, 150)} ... ${String(e).substring(
+                String(e).length - 150
+              )}`
+            : String(e)
+
+        toast.custom((t) => (
+          <Toast
+            icon={<ErrorIcon color="error" />}
+            title="Oops swap error!"
+            body={errorMessage}
+            buttons={
+              <Button
+                as="a"
+                variant="ghost"
+                href={process.env.NEXT_PUBLIC_FEEDBACK_LINK}
+                target="__blank"
+                iconRight={<UpRightArrow />}
+              >
+                Provide feedback
+              </Button>
+            }
+            onClose={() => toast.dismiss(t.id)}
+          />
+        ))
+      },
+      onSettled() {
+        setTransactionState(TransactionStatus.IDLE)
+      },
+    }
+  )
+}
+
+export const useRegistryCancel = ({ id }: UseRegistryCancelArgs) => {
+  const [{ client, address, key, status }, setWalletState] =
+    useRecoilState(walletState)
+  const setTransactionState = useSetRecoilState(transactionStatusState)
+  const refetchQueries = useRefetchQueries(['tokenBalance'])
+
+  return useMutation(
+    'registry',
+    async () => {
+      if (status !== WalletStatusType.connected) {
+        throw new Error('Please connect your wallet.')
+      }
+
+      setTransactionState(TransactionStatus.EXECUTING)
+
+      return await registryCancelRequests({
+        client,
+        senderAddress: address,
+        id,
+      })
+    },
+    {
+      async onSuccess() {
+        toast.custom((t) => (
+          <Toast
+            icon={<IconWrapper icon={<Valid />} color="valid" />}
+            title="Swap successful!"
+            onClose={() => toast.dismiss(t.id)}
+          />
+        ))
+
+        const refetchedTransactions = await registryRequests({
+          client,
+          senderAddress: address,
+        })
+        setWalletState({
+          key,
+          status,
+          client,
+          address,
+          transactions: refetchedTransactions,
+        })
 
         refetchQueries()
       },

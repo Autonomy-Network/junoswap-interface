@@ -14,7 +14,9 @@ import {
   Inline,
   media,
   MoonIcon,
+  MultisigIcon,
   Open,
+  SharesIcon,
   styled,
   Telegram,
   Text,
@@ -58,6 +60,7 @@ export function NavigationSidebar({
       address: '',
       key: null,
       client: null,
+      transactions: [],
     })
   }
 
@@ -84,7 +87,7 @@ export function NavigationSidebar({
           iconLeft={<AddressIcon />}
           selected={getIsLinkActive('/')}
         >
-          Swap
+          Trade
         </Button>
       </Link>
       <Link href="/transfer" passHref>
@@ -92,7 +95,7 @@ export function NavigationSidebar({
           as="a"
           variant="menu"
           size="large"
-          iconLeft={<ArrowUpIcon />}
+          iconLeft={<IconWrapper icon={<ArrowUpIcon />} />}
           selected={getIsLinkActive('/transfer')}
         >
           Transfer
@@ -107,6 +110,28 @@ export function NavigationSidebar({
           selected={getIsLinkActive('/pools')}
         >
           Liquidity
+        </Button>
+      </Link>
+      <Link href="/limit-order" passHref>
+        <Button
+          as="a"
+          variant="menu"
+          size="large"
+          iconLeft={<MultisigIcon />}
+          selected={getIsLinkActive('/limit-order')}
+        >
+          Limit Order
+        </Button>
+      </Link>
+      <Link href="/stop-loss" passHref>
+        <Button
+          as="a"
+          variant="menu"
+          size="large"
+          iconLeft={<IconWrapper icon={<SharesIcon />} />}
+          selected={getIsLinkActive('/stop-loss')}
+        >
+          Stop Loss
         </Button>
       </Link>
     </StyledListForLinks>

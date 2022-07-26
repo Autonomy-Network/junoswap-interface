@@ -23,6 +23,7 @@ type GeneratedWalletState<
   client: TClient | null
   status: WalletStatusType
   address: string
+  transactions: any[]
 }
 
 type CreateWalletStateArgs<TState = {}> = {
@@ -40,6 +41,7 @@ function createWalletState<TClient = any, TState = {}>({
       status: WalletStatusType.idle,
       client: null,
       address: '',
+      transactions: [],
       ...defaultState,
     },
     dangerouslyAllowMutability: true,
@@ -62,7 +64,7 @@ function createWalletState<TClient = any, TState = {}>({
           } catch (e) {}
         }
 
-        onSet((newValue, oldValue) => {
+        onSet(async (newValue, oldValue) => {
           const isReset = !newValue.address && (oldValue as any)?.address
 
           if (isReset) {

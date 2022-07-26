@@ -65,6 +65,7 @@ export const useConnectIBCWallet = (
         address,
         client: wasmChainClient,
         status: WalletStatusType.connected,
+        transactions: [],
       })
     } catch (e) {
       /* set the error state */
@@ -73,6 +74,7 @@ export const useConnectIBCWallet = (
         address: '',
         client: null,
         status: WalletStatusType.error,
+        transactions: [],
       })
 
       throw e

@@ -6,25 +6,28 @@ import { useRecoilState, useRecoilValue } from 'recoil'
 import { walletState, WalletStatusType } from 'state/atoms/walletAtoms'
 import { NETWORK_FEE } from 'util/constants'
 
-import { useTokenSwap } from '../hooks'
+import { useRegistry, useTokenSwap } from '../hooks'
 import { slippageAtom, tokenSwapAtom } from '../swapAtoms'
 import { SlippageSelector } from './SlippageSelector'
 
 type TransactionTipsProps = {
   isPriceLoading?: boolean
   tokenToTokenPrice?: number
+  tokenToTokenRate?: number
+  currentPrice?: number
   size?: 'small' | 'large'
 }
 
 export const TransactionAction = ({
   isPriceLoading,
+  tokenToTokenRate,
   tokenToTokenPrice,
+  currentPrice,
   size = 'large',
 }: TransactionTipsProps) => {
   const [requestedSwap, setRequestedSwap] = useState(false)
   const [tokenA, tokenB] = useRecoilValue(tokenSwapAtom)
   const { balance: tokenABalance } = useTokenBalance(tokenA?.tokenSymbol)
-
   /* wallet state */
   const { status } = useRecoilValue(walletState)
   const { mutate: connectWallet } = useConnectWallet()
@@ -38,16 +41,45 @@ export const TransactionAction = ({
       tokenToTokenPrice: tokenToTokenPrice || 0,
     })
 
+  const { mutate: handleRegistry, isLoading: isExecutingRegistryTransaction } =
+    useRegistry({
+      tokenASymbol: tokenA?.tokenSymbol,
+      tokenBSymbol: tokenB?.tokenSymbol,
+      tokenAmount: tokenA?.amount,
+      tokenToTokenPrice: tokenToTokenPrice || 0,
+      type: window.location.href.includes('/limit-order')
+        ? 'limit-order'
+        : 'stop-loss',
+    })
+
   /* proceed with the swap only if the price is loaded */
 
   useEffect(() => {
     const shouldTriggerTransaction =
-      !isPriceLoading && !isExecutingTransaction && requestedSwap
+      !isPriceLoading &&
+      !isExecutingTransaction &&
+      !isExecutingRegistryTransaction &&
+      requestedSwap
     if (shouldTriggerTransaction) {
-      handleSwap()
-      setRequestedSwap(false)
+      if (
+        window.location.href.includes('/limit-order') ||
+        window.location.href.includes('/stop-loss')
+      ) {
+        handleRegistry()
+        setRequestedSwap(false)
+      } else {
+        handleSwap()
+        setRequestedSwap(false)
+      }
     }
-  }, [isPriceLoading, isExecutingTransaction, requestedSwap, handleSwap])
+  }, [
+    isPriceLoading,
+    isExecutingTransaction,
+    requestedSwap,
+    handleSwap,
+    isExecutingRegistryTransaction,
+    handleRegistry,
+  ])
 
   const handleSwapButtonClick = () => {
     if (status === WalletStatusType.connected) {
@@ -59,11 +91,15 @@ export const TransactionAction = ({
 
   const shouldDisableSubmissionButton =
     isExecutingTransaction ||
+    isExecutingRegistryTransaction ||
     !tokenB.tokenSymbol ||
     !tokenA.tokenSymbol ||
     status !== WalletStatusType.connected ||
     tokenA.amount <= 0 ||
-    tokenA?.amount > tokenABalance
+    tokenA?.amount > tokenABalance ||
+    (window.location.href.includes('/limit-order')
+      ? currentPrice <= tokenToTokenRate
+      : currentPrice >= tokenToTokenRate)
 
   if (size === 'small') {
     return (
@@ -108,29 +144,27 @@ export const TransactionAction = ({
 
   return (
     <StyledDivForWrapper>
-      <StyledDivForInfo>
-        <StyledDivColumnForInfo kind="slippage">
-          <SlippageSelector
-            slippage={slippage}
-            onSlippageChange={setSlippage}
-            css={{ borderRadius: '$2 0 0 $2' }}
-          />
-        </StyledDivColumnForInfo>
-        <StyledDivColumnForInfo kind="fees">
-          <Text variant="legend">Swap fee ({NETWORK_FEE * 100}%)</Text>
-        </StyledDivColumnForInfo>
-      </StyledDivForInfo>
       <Button
         variant="primary"
         size="large"
         disabled={shouldDisableSubmissionButton}
         onClick={
-          !isExecutingTransaction && !isPriceLoading
+          !isExecutingTransaction &&
+          !isExecutingRegistryTransaction &&
+          !isPriceLoading
             ? handleSwapButtonClick
             : undefined
         }
+        css={{ fontWeight: 'bolder' }}
       >
-        {isExecutingTransaction ? <Spinner instant /> : 'Swap'}
+        {isExecutingTransaction || isExecutingRegistryTransaction ? (
+          <Spinner instant />
+        ) : document.location.href.includes('/limit-order') ||
+          document.location.href.includes('/stop-loss') ? (
+          'Place Order'
+        ) : (
+          'Swap'
+        )}
       </Button>
     </StyledDivForWrapper>
   )
@@ -138,35 +172,8 @@ export const TransactionAction = ({
 
 const StyledDivForWrapper = styled('div', {
   display: 'grid',
-  gridTemplateColumns: '1fr 150px',
+  gridTemplateColumns: '1fr',
   columnGap: 12,
   alignItems: 'center',
   padding: '12px 0',
-})
-
-const StyledDivForInfo = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  textTransform: 'uppercase',
-  borderRadius: 8,
-})
-
-const StyledDivColumnForInfo = styled('div', {
-  display: 'grid',
-  variants: {
-    kind: {
-      slippage: {
-        backgroundColor: 'transparent',
-        minWidth: '140px',
-        borderRadius: '$4 0 0 $4',
-        borderRight: '1px solid $borderColors$default',
-      },
-      fees: {
-        backgroundColor: '$colors$dark10',
-        flex: 1,
-        padding: '$space$8 $space$12',
-        borderRadius: '0 $2 $2 0',
-      },
-    },
-  },
 })
